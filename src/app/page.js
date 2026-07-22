@@ -5,6 +5,7 @@ import StatusMeter from "../components/StatusMeter";
 import CalendarGrid from "../components/CalendarGrid";
 import BookingForm from "../components/BookingForm";
 import Confetti from "../components/Confetti";
+import AdminDashboard from "../components/AdminDashboard";
 import { INITIAL_BOOKINGS, FUNNY_STATUSES, FUNNY_REJECTIONS } from "../utils/constants";
 
 export default function Home() {
@@ -16,6 +17,7 @@ export default function Home() {
   const [confettiActive, setConfettiActive] = useState(false);
   const [searchName, setSearchName] = useState("");
   const [analyzingIds, setAnalyzingIds] = useState({}); // Tracking which booking IDs are being "reviewed"
+  const [activeTab, setActiveTab] = useState("book"); // 'book' or 'admin'
 
   // Initialize data from localStorage or fallback
   useEffect(() => {
@@ -80,44 +82,9 @@ export default function Home() {
     setBookings((prev) => [bookingWithId, ...prev]);
     setSelectedTime(""); // Reset slot picker
 
-    // Trigger initial confetti for application submission!
+    // Trigger confetti for application submission!
     setConfettiActive(true);
     setTimeout(() => setConfettiActive(false), 3000);
-
-    // Start simulated review decision process
-    // Step 1: Contemplating
-    setAnalyzingIds((prev) => ({ ...prev, [bookingId]: "Aditi is inspecting your bribe..." }));
-
-    // Step 2: In 3 seconds, change review state
-    setTimeout(() => {
-      setAnalyzingIds((prev) => ({ ...prev, [bookingId]: "Comparing with scheduled nap time..." }));
-    }, 2000);
-
-    // Step 3: In 5 seconds, finalize decision
-    setTimeout(() => {
-      setAnalyzingIds((prev) => {
-        const copy = { ...prev };
-        delete copy[bookingId];
-        return copy;
-      });
-
-      // Roll probability check
-      const success = Math.random() * 100 <= newBooking.probability;
-
-      setBookings((prevBookings) =>
-        prevBookings.map((b) => {
-          if (b.id === bookingId) {
-            if (success) {
-              return { ...b, status: "approved" };
-            } else {
-              const randomReason = FUNNY_REJECTIONS[Math.floor(Math.random() * FUNNY_REJECTIONS.length)];
-              return { ...b, status: "rejected", rejectionReason: randomReason };
-            }
-          }
-          return b;
-        })
-      );
-    }, 5000);
   };
 
   const filteredBookings = searchName
@@ -149,137 +116,166 @@ export default function Home() {
               </span>
             </div>
           </div>
-          <span className="text-[11px] font-bold text-text-muted bg-dark-surface border border-glass-border px-3 py-1 rounded-full">
-            Status: Fully Busy ☕
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="hidden sm:inline-block text-[11px] font-bold text-text-muted bg-dark-surface border border-glass-border px-3 py-1 rounded-full">
+              Status: Fully Busy ☕
+            </span>
+            {/* Navigation Tabs */}
+            <div className="flex bg-dark-surface/60 p-1 rounded-xl border border-glass-border">
+              <button
+                onClick={() => setActiveTab("book")}
+                className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                  activeTab === "book"
+                    ? "bg-primary text-white shadow-md"
+                    : "text-text-muted hover:text-text-main"
+                }`}
+              >
+                🤝 Apply
+              </button>
+              <button
+                onClick={() => setActiveTab("admin")}
+                className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                  activeTab === "admin"
+                    ? "bg-secondary text-white shadow-md"
+                    : "text-text-muted hover:text-text-main"
+                }`}
+              >
+                🔒 Portal
+              </button>
+            </div>
+          </div>
         </div>
       </header>
 
       {/* Main Content Area */}
       <div className="flex-1 max-w-6xl w-full mx-auto px-4 py-8 flex flex-col gap-8">
-        {/* Live Busy-ness status */}
-        <StatusMeter busyLevel={busyLevel} currentStatus={currentStatus} />
+        {activeTab === "book" ? (
+          <>
+            {/* Live Busy-ness status */}
+            <StatusMeter busyLevel={busyLevel} currentStatus={currentStatus} />
 
-        {/* Form and Calendar Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          <div className="lg:col-span-7 flex flex-col gap-6">
-            <CalendarGrid
-              selectedDate={selectedDate}
-              setSelectedDate={setSelectedDate}
-              selectedTime={selectedTime}
-              setSelectedTime={setSelectedTime}
-              bookings={bookings}
-            />
-          </div>
-          <div className="lg:col-span-5">
-            <BookingForm
-              selectedDate={selectedDate}
-              selectedTime={selectedTime}
-              onSubmit={handleBookingSubmit}
-            />
-          </div>
-        </div>
-
-        {/* Live Application status board */}
-        <div className="glass-card rounded-2xl p-6 border border-glass-border">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-zinc-800/80 pb-4">
-            <div>
-              <h3 className="text-lg font-extrabold text-text-main">Live Application Board</h3>
-              <p className="text-xs text-text-muted mt-0.5">
-                See who successfully bribed Aditi or got roasted in real-time.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              {/* Filter Input */}
-              <input
-                type="text"
-                placeholder="🔍 Search name..."
-                value={searchName}
-                onChange={(e) => setSearchName(e.target.value)}
-                className="rounded-xl px-3 py-1.5 glass-input text-xs text-text-main w-full sm:w-36"
-              />
-              {/* Clear button */}
-              {bookings.length > 0 && (
-                <button
-                  onClick={handleClearBoard}
-                  className="px-3 py-1.5 rounded-xl border border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-bold transition-all cursor-pointer whitespace-nowrap"
-                >
-                  Clear Board
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Status List */}
-          <div className="flex flex-col gap-3">
-            {filteredBookings.length === 0 ? (
-              <div className="text-center py-8 text-xs text-zinc-500">
-                No bookings found. Apply above to be the first!
+            {/* Form and Calendar Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              <div className="lg:col-span-7 flex flex-col gap-6">
+                <CalendarGrid
+                  selectedDate={selectedDate}
+                  setSelectedDate={setSelectedDate}
+                  selectedTime={selectedTime}
+                  setSelectedTime={setSelectedTime}
+                  bookings={bookings}
+                />
               </div>
-            ) : (
-              filteredBookings.map((b) => {
-                let badgeClass = "";
-                let containerClass = "border-glass-border";
-                const isUnderReview = analyzingIds[b.id];
+              <div className="lg:col-span-5">
+                <BookingForm
+                  selectedDate={selectedDate}
+                  selectedTime={selectedTime}
+                  onSubmit={handleBookingSubmit}
+                />
+              </div>
+            </div>
 
-                if (b.status === "approved") {
-                  badgeClass = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
-                  containerClass = "border-emerald-500/20 hover:border-emerald-500/30";
-                } else if (b.status === "rejected") {
-                  badgeClass = "bg-rose-500/10 text-rose-400 border-rose-500/20";
-                  containerClass = "border-rose-500/20 hover:border-rose-500/30";
-                } else if (isUnderReview) {
-                  badgeClass = "bg-purple-500/10 text-purple-400 border-purple-500/20 animate-pulse";
-                  containerClass = "border-purple-500/20";
-                } else {
-                  badgeClass = "bg-amber-500/10 text-amber-400 border-amber-500/20";
-                }
+            {/* Live Application status board */}
+            <div className="glass-card rounded-2xl p-6 border border-glass-border">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-zinc-800/80 pb-4">
+                <div>
+                  <h3 className="text-lg font-extrabold text-text-main">Live Application Board</h3>
+                  <p className="text-xs text-text-muted mt-0.5">
+                    See who successfully bribed Aditi or got roasted in real-time.
+                  </p>
+                </div>
 
-                const meetingDateFormatted = new Date(b.date).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                });
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  {/* Filter Input */}
+                  <input
+                    type="text"
+                    placeholder="🔍 Search name..."
+                    value={searchName}
+                    onChange={(e) => setSearchName(e.target.value)}
+                    className="rounded-xl px-3 py-1.5 glass-input text-xs text-text-main w-full sm:w-36"
+                  />
+                  {/* Clear button */}
+                  {bookings.length > 0 && (
+                    <button
+                      onClick={handleClearBoard}
+                      className="px-3 py-1.5 rounded-xl border border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-bold transition-all cursor-pointer whitespace-nowrap"
+                    >
+                      Clear Board
+                    </button>
+                  )}
+                </div>
+              </div>
 
-                return (
-                  <div
-                    key={b.id}
-                    className={`p-4 rounded-xl border bg-dark-surface/40 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-all ${containerClass}`}
-                  >
-                    <div className="flex flex-col gap-1 w-full sm:w-auto">
-                      <div className="flex items-center gap-2">
-                        <span className="font-extrabold text-sm text-text-main">{b.name}</span>
-                        <span className="text-[10px] text-text-muted font-bold capitalize">
-                          ({b.relationship})
+              {/* Status List */}
+              <div className="flex flex-col gap-3">
+                {filteredBookings.length === 0 ? (
+                  <div className="text-center py-8 text-xs text-zinc-500">
+                    No bookings found. Apply above to be the first!
+                  </div>
+                ) : (
+                  filteredBookings.map((b) => {
+                    let badgeClass = "";
+                    let containerClass = "border-glass-border";
+
+                    if (b.status === "approved") {
+                      badgeClass = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+                      containerClass = "border-emerald-500/20 hover:border-emerald-500/30";
+                    } else if (b.status === "rejected") {
+                      badgeClass = "bg-rose-500/10 text-rose-400 border-rose-500/20";
+                      containerClass = "border-rose-500/20 hover:border-rose-500/30";
+                    } else {
+                      badgeClass = "bg-amber-500/10 text-amber-400 border-amber-500/20";
+                    }
+
+                    const meetingDateFormatted = new Date(b.date).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                    });
+
+                    return (
+                      <div
+                        key={b.id}
+                        className={`p-4 rounded-xl border bg-dark-surface/40 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-all ${containerClass}`}
+                      >
+                        <div className="flex flex-col gap-1 w-full sm:w-auto">
+                          <div className="flex items-center gap-2">
+                            <span className="font-extrabold text-sm text-text-main">{b.name}</span>
+                            <span className="text-[10px] text-text-muted font-bold capitalize">
+                              ({b.relationship})
+                            </span>
+                          </div>
+                          <p className="text-xs text-text-muted line-clamp-1">
+                            📅 {meetingDateFormatted} at {b.time} • Bribe:{" "}
+                            <span className="text-text-main font-bold">
+                              {b.bribe === "none" ? "Nothing (Very Bold)" : b.bribe}
+                            </span>
+                          </p>
+                          {b.status === "rejected" && b.rejectionReason ? (
+                            <p className="text-[11px] text-rose-400 bg-rose-950/10 border border-rose-900/30 p-2 rounded mt-1 italic max-w-lg">
+                              ❌ Roasted: "{b.rejectionReason}"
+                            </p>
+                          ) : null}
+                        </div>
+
+                        <span className={`text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full border tracking-widest self-start sm:self-auto ${badgeClass}`}>
+                          {b.status}
                         </span>
                       </div>
-                      <p className="text-xs text-text-muted line-clamp-1">
-                        📅 {meetingDateFormatted} at {b.time} • Bribe:{" "}
-                        <span className="text-text-main font-bold">
-                          {b.bribe === "none" ? "Nothing (Very Bold)" : b.bribe}
-                        </span>
-                      </p>
-                      {isUnderReview ? (
-                        <p className="text-[11px] text-purple-400 italic mt-1 font-semibold flex items-center gap-1.5">
-                          <span className="animate-spin inline-block w-3 h-3 border border-purple-400 border-t-transparent rounded-full"></span>
-                          {isUnderReview}
-                        </p>
-                      ) : b.status === "rejected" && b.rejectionReason ? (
-                        <p className="text-[11px] text-rose-400 bg-rose-950/10 border border-rose-900/30 p-2 rounded mt-1 italic max-w-lg">
-                          ❌ Roasted: "{b.rejectionReason}"
-                        </p>
-                      ) : null}
-                    </div>
-
-                    <span className={`text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full border tracking-widest self-start sm:self-auto ${badgeClass}`}>
-                      {isUnderReview ? "reviewing" : b.status}
-                    </span>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          </>
+        ) : (
+          <AdminDashboard
+            bookings={bookings}
+            setBookings={setBookings}
+            busyLevel={busyLevel}
+            setBusyLevel={setBusyLevel}
+            currentStatus={currentStatus}
+            setCurrentStatus={setCurrentStatus}
+          />
+        )}
       </div>
 
       {/* Footer */}
