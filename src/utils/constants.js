@@ -1,8 +1,8 @@
 export const BRIBES = [
   { id: 'none', label: 'Nothing, just my presence', icon: '🤷‍♂️', probImpact: -50, funnyNote: "Warning: High risk of instant rejection." },
-  { id: 'boba', label: 'Matcha / Taro Boba (Less ice, 50% sugar)', icon: '🧋', probImpact: 35, funnyNote: "Aditi loves boba. Highly recommended." },
+  { id: 'boba', label: 'Pani Puri (Teekha Paani)', icon: '😋', probImpact: 35, funnyNote: "Spicy water balls. Aditi can eat 50 in one go." },
   { id: 'coffee', label: 'Starbucks Iced Latte / Matcha Latte', icon: '☕', probImpact: 25, funnyNote: "Keeps her awake during useless meetings." },
-  { id: 'pastry', label: 'Almond Croissant / Gourmet Donut', icon: '🥐', probImpact: 30, funnyNote: "Flaky pastry = flaky calendar slots open up!" },
+  { id: 'pastry', label: 'Steam / Fried Momos', icon: '🥟', probImpact: 30, funnyNote: "Extra spicy red chutney is mandatory for calendar slots." },
   { id: 'cookies', label: 'Homemade Warm Choc Chip Cookies', icon: '🍪', probImpact: 45, funnyNote: "Legendary bribe. Almost guaranteed success." },
   { id: 'gossip', label: 'Fresh, juicy, hot gossip', icon: '🔥', probImpact: 50, funnyNote: "Instant approval. Calendar cleared." }
 ];

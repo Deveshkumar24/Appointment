@@ -215,6 +215,27 @@ export default function BookingForm({ selectedDate, selectedTime, onSubmit }) {
                 );
               })}
             </div>
+            
+            {/* Selected Bribe summary card for mobile devices */}
+            {bribe && (
+              <div className={`mt-3 p-3 rounded-xl border flex items-center gap-3 transition-all ${
+                bribe === 'none' 
+                  ? "bg-rose-500/10 border-rose-500/20 text-rose-300"
+                  : "bg-primary/10 border-primary/20 text-white"
+              }`}>
+                <span className="text-3xl select-none">{BRIBES.find(b => b.id === bribe)?.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <p className={`text-xs font-black leading-none mb-1 ${
+                    bribe === 'none' ? "text-rose-400" : "text-white"
+                  }`}>
+                    {bribe === 'none' ? "WARNING: No Bribe Selected" : `Selected Bribe: ${BRIBES.find(b => b.id === bribe)?.label}`}
+                  </p>
+                  <p className="text-[10px] text-zinc-400 leading-tight">
+                    {BRIBES.find(b => b.id === bribe)?.funnyNote}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Approval Rate Probability Bar */}
