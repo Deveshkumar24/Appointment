@@ -65,7 +65,7 @@ export default function AdminDashboard({
         <form onSubmit={handleLogin} className="flex flex-col gap-4">
           <input
             type="password"
-            placeholder="Secret Passcode (Hint: busyqueen)"
+            placeholder="Enter Secret Passcode"
             value={passcode}
             onChange={(e) => setPasscode(e.target.value)}
             className="w-full rounded-xl px-4 py-3 glass-input text-center text-sm font-semibold tracking-widest text-text-main"
